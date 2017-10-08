@@ -9,6 +9,8 @@
 </body>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script src="../node_modules/codemirror/lib/codemirror.js"></script>
+<script src="../node_modules/diff/dist/diff.min.js"></script>
+<script src="HostDiff.js"></script>
 <script >
 	function onKeyDown()
 	{
@@ -28,7 +30,7 @@
 			lineNumbers : true
 		});
 		editor.on("changes", function(e) {
-			console.log(e.to);
+			change_occured(editor.getValue());
 		});
 	});
 </script>
