@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="css/main.css"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+    <div class="container">
+        <h1 class="center">Lc<i class="material-icons medium">wifi_tethering</i>de</h1>
+        <h5 class="center">A modern text-editor for code sharing</h5>
+        <div class="row">
+            <div class="col m6 s12 offset-m3">
+                <div class="card" id="login_card">
+                    <div class="progress hidden" id="progress_bar">
+                        <div class="indeterminate"></div>
+                    </div>
+                    <div class="card-content center">
+                        <i class="material-icons medium">people</i>
+                        <p>Join a party now!</p>
+                    </div>
+                    <div class="card-content center">
+                        <form>
+                            <div class="input-field">
+                                <input id="unique_code" type="text" autocomplete="off"/>
+                                <label for="host_name" data-error="Invalid key">Enter unique code</label>
+                            </div>
+                            <a class="btn-floating btn-large waves-effect waves-light teal" id="submit-btn"><i class="material-icons">arrow_forward</i></a>
+                        </form>
+                    </div>
+                    <div class="card-content center grey lighten-4">
+                        <a href="index.html">Host a party instead!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="fixed-action-btn">
+    <a class="btn-floating btn-large teal">
+      <i class="large material-icons">info</i>
+    </a>
+    <ul>
+      <li><a class="btn-floating red"><i class="material-icons">insert_chart</i></a></li>
+      <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
+      <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
+      <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
+    </ul>
+  </div>
+</body>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/client.js"></script>
+</html>
