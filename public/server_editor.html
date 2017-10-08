@@ -7,17 +7,10 @@
 <body>
 	<textarea class="codemirror-textarea" onKeyDown="onKeyDown();"></textarea>
 </body>
+<script src="js/diff_match_patch.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script src="../node_modules/codemirror/lib/codemirror.js"></script>
-<script src="../node_modules/diff/dist/diff.min.js"></script>
 <script src="HostDiff.js"></script>
-<script >
-	function onKeyDown()
-	{
-			var key = window.event.keyCode;
-			console.log(key);
-	}
-</script>
 <script>
 	$(document).ready(function()
 	{
