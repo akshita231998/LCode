@@ -3,21 +3,26 @@ var dmp = new diff_match_patch();
 var prev = "";
 var cur = "";
 
-var socket = io("192.168.43.158:3000");
-
-socket.on("connect",function() {
-  console.log("Socket connected");
+var socket;
+$.get("/IpAddress",function(ip) {
+   console.log("IP address: ", ip);
+   socket = io(ip);
+    start();
 });
 
-socket.on("init_text", function(init) {
-  prev = init;
-  editor.setValue(prev);
-})
+function start(){
+    socket.on("connect",function() {
+        console.log("Socket connected");
+    });
+    socket.on("init_text", function(init) {
+      prev = init;
+      editor.setValue(prev);
+    })
 
-socket.on("disconnect", function() {
-    console.log("Disconnected");
-});
-
+    socket.on("disconnect", function() {
+        console.log("Disconnected");
+    });
+}
 function change_occured(data){
   cur = data;
   var diff = dmp.diff_main(prev,cur);

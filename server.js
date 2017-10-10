@@ -3,16 +3,20 @@ var http = require('http');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
-var server = http.createServer(app).listen(3000);
+var port = 3000;
+var server = http.createServer(app).listen(port);
 var io = require("socket.io")(server);
 var unique_code = -1;
 var prev = "";
 var DiffMatchPatch = require('diff-match-patch');
 var dmp = new DiffMatchPatch();
+var ip_module = require("ip");
+var ip_address = ip_module.address();
 
 app.use(express.static("./node_modules"));
 app.use(express.static("./public"));
 app.use(cors());
+
 io.on("connection", function(socket)
 {
 	console.log("Hello");
@@ -53,4 +57,8 @@ app.post("/api/validate_code",function(req,res) {
 	}
 });
 
-console.log("Server running on port 3000");
+app.get("/IpAddress", function(req, res){
+   res.send(ip_address+":"+port); 
+});
+
+console.log("Server running on port "+port);
