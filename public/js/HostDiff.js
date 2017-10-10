@@ -6,6 +6,8 @@ var cur = "";
 var socket;
 $.get("/IpAddress",function(ip) {
    socket = io(ip);
+    console.log(socket.r);
+    console.log(socket);
    start();
 });
 
@@ -17,10 +19,17 @@ function start(){
     socket.on("init_text", function(init) {
       prev = init;
       editor.setValue(prev);
-    })
-
+    });
+    
+    socket.on("client_code", function(code){
+        console.log(code); 
+    });
     socket.on("disconnect", function() {
         console.log("Disconnected");
+    });
+    
+    socket.on("client_code", function(data){
+        console.log(data);
     });
 }
 function change_occured(data){

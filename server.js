@@ -17,7 +17,7 @@ var ip_address = ip_module.address();
 var prev = "";
 var unique_code = -1;
 var sess;
-
+var connections = [];
 app.use(session({secret: 'ABCDEF'}));
 app.use(express.static("./node_modules"));
 app.use(express.static("./public"));
@@ -27,28 +27,44 @@ app.use(bodyParser.urlencoded({extended:false}));
 
 io.on("connection", function(socket)
 {
-	socket.emit("init_text", prev);
+    console.log(socket.id);
 	
+    connections.push(socket);
     socket.on("host_patch",function(patch_list) {
 		socket.broadcast.emit("client_patch", patch_list);
 		var res = dmp.patch_apply(patch_list, prev);
-	  prev = res[0];
+        prev = res[0];
 	});
-	
+    
     socket.on("error", function(e) {
 		console.log(e.message);
 	});
+    socket.on("disconnect", function(){
+        connections.splice(connections.indexOf(this), 1);
+    });
+    
+    socket.emit("init_text", prev);
+    
+    /*
+    *   Correct it to emit only to host and not     bradcasting to everyone!
+    */
+    socket.on("client_code", function(code)
+    {
+        console.log("Emitting on: ", connections[0].id);
+       connections[0].emit("client_code", code); 
+    });
+    
 });
 
-app.use(function(req, res, next){
-	console.log(`${req.method} requested for ${req.url}`);
-	next();
-});
-
-app.use(function(req, res, next){
-		console.log(`${req.method} ---- ${JSON.stringify(req.body)}`);
-		next();
-});
+//app.use(function(req, res, next){
+//	console.log(`${req.method} requested for ${req.url}`);
+//	next();
+//});
+//
+//app.use(function(req, res, next){
+//		console.log(`${req.method} ---- ${JSON.stringify(req.body)}`);
+//		next();
+//});
 
 app.post("/api/unique_code",function(req,res) {
     if(unique_code==-1)
@@ -59,8 +75,7 @@ app.post("/api/unique_code",function(req,res) {
     else
     {   
         res.send(unique_code);
-    }   
-	
+    }
 });
 
 app.post("/api/validate_code",function(req,res) {

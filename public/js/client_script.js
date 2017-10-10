@@ -1,8 +1,9 @@
 
-var socket;
+var socket, socket_sender;
 var dmp = new diff_match_patch();
 var prev = "";
 var text_area = document.getElementById('text');
+
 
 $.get("/sessionCheck",function(response) {
     console.log(response);
@@ -12,14 +13,24 @@ $.get("/sessionCheck",function(response) {
 });
 $.get("/IpAddress",function(ip) {
    console.log("IP address: ", ip);
-   socket = io(ip);
-   start();
+    if(ip!=undefined && ip!=null)
+    {
+        
+        /*
+            Contains error proxy connection refused!
+            Server disconnected error!
+        */
+        socket = io(ip);
+        start();
+    }
 });
 function start()
 {
     socket.on("connect",function() {
         console.log("Socket connected");
+
     });
+    
      socket.on("init_text", function(init) {
       prev = init;
       text_area.value = prev;
@@ -35,4 +46,8 @@ function start()
       text_area.value = res[0];
       prev = res[0];
     });
+    /*
+        Put into on share button clicked by client
+    */
+    socket.emit("client_code","Hello");
 }
