@@ -1,5 +1,6 @@
 var express = require("express");
 var http = require('http');
+var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
 var server = http.createServer(app).listen(3000);
@@ -11,14 +12,18 @@ var dmp = new DiffMatchPatch();
 
 app.use(express.static("./node_modules"));
 app.use(express.static("./public"));
-
+app.use(cors());
 io.on("connection", function(socket)
 {
 	console.log("Hello");
+	socket.emit("init_text", prev);
 	socket.on("patch",function(patch_list) {
+		socket.broadcast.emit("code_patch_client", patch_list);
 		var res = dmp.patch_apply(patch_list, prev);
-		console.log(res[0]);
-		prev = res[0];
+	  prev = res[0];
+	});
+	socket.on("error", function(e) {
+		console.log(e.message);
 	});
 });
 

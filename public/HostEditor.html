@@ -11,21 +11,5 @@
 <script src="js/diff_match_patch.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script src="codemirror/lib/codemirror.js"></script>
-<script src="HostDiff.js"></script>
-<script>
-	$(document).ready(function()
-	{
-		var code = $(".codemirror-textarea")[0];
-		var editor = CodeMirror.fromTextArea(code,{
-			theme : "nec",
-			mode : "javascript",
-			electricChars : true,
-			smartIndent : true,
-			lineNumbers : true
-		});
-		editor.on("changes", function(e) {
-			change_occured(editor.getValue());
-		});
-	});
-</script>
+<script src="js/HostDiff.js"></script>
 </html>

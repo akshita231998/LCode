@@ -12,7 +12,7 @@ $(document).ready(function() {
                 $("#unique_code").addClass("validate invalid");
                 $("#unique_code").val("");
               } else {
-                // window.location.replace("/");
+                window.location.replace("/client_view.html");
               }
             });
       }

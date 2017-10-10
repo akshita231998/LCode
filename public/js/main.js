@@ -1,31 +1,21 @@
-var socket = io("http://localhost:3000");
-
-socket.on("disconnect",function() {
-	setTitle("Disconnected");
+$(document).ready(function() {
+    $("#submit-btn").click(function() {
+        if($("#host_name").val() != "") {
+            var random = (Math.floor(Math.random() * 10000) + 1);
+            $("#unique_code").text(random);
+            $("#login_card").fadeOut(function() {
+                $("#unique_id_card").fadeIn();
+            });
+            $.post('/api/unique_code',{code : random});
+        }
+        else {
+            $("#host_name").addClass("invalid");
+        }
+    });
+    $("#cancel-party-btn").click(function() {
+        $("#unique_id_card").fadeOut(function() {
+            $("#login_card").fadeIn();
+            $("#unique_code").text("");
+        });
+    });
 });
-
-socket.on("connect",function() {
-	setTitle("Connected to Cyber Chat!");
-	console.log("Hello");
-});
-
-socket.on("message",function(message) {
-	printMessage(message);
-});
-
-document.forms[0].onsubmit = function () {
-    var input = document.getElementById("message");
-    // printMessage(input.value);
-    socket.emit("chat", input.value);
-    input.value = '';
-};
-
-function setTitle(title) {
-    document.querySelector("h1").innerHTML = title;
-}
-
-function printMessage(message) {
-    var p = document.createElement("p");
-    p.innerText = message;
-    document.querySelector("div.messages").appendChild(p);
-}
