@@ -13,28 +13,42 @@
         <div class="row">
             <div class="col m6 s12 offset-m3">
                 <div class="card" id="login_card">
-                    <div class="progress hidden" id="progress_bar">
-                        <div class="indeterminate"></div>
-                    </div>
                     <div class="card-content center">
                         <i class="material-icons medium">people</i>
-                        <p>Join a party now!</p>
+                        <p>Create your own party now</p>
                     </div>
                     <div class="card-content center">
                         <form>
                             <div class="input-field">
-                                <input id="unique_code" type="text" autocomplete="off"/>
-                                <label for="host_name" data-error="Invalid key">Enter unique code</label>
+                                <input id="host_name" type="text" class="validate" autocomplete="off"/>
+                                <label for="host_name" data-error="Invalid name">Your Name</label>
                             </div>
                             <a class="btn-floating btn-large waves-effect waves-light teal" id="submit-btn"><i class="material-icons">arrow_forward</i></a>
                         </form>
                     </div>
                     <div class="card-content center grey lighten-4">
-                        <a href="index.html">Host a party instead!</a>
+                        <a href="index.html">Join a party instead!</a>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col m6 s12 offset-m3">
+                <div class="card hidden" id="unique_id_card">
+                    <div class="card-content center">
+                        <h5>Your unique code is</h5>
+                        <h1 id="unique_code">8667</h1>
+                    </div>
+                    <div class="card-content center">
+                        <a class="btn-floating btn-large waves-effect waves-light red accent-3" id="cancel-party-btn"><i class="material-icons">clear</i></a>
+                    </div>
+                    <div class="card-content center grey lighten-4">
+                        <a href="HostEditor.html">All set go!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="fixed-action-btn">
     <a class="btn-floating btn-large teal">
       <i class="large material-icons">info</i>
@@ -49,5 +63,5 @@
 </body>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/materialize.min.js"></script>
-    <script type="text/javascript" src="js/client.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
 </html>

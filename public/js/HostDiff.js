@@ -5,22 +5,31 @@ var cur = "";
 
 var socket;
 $.get("/IpAddress",function(ip) {
-   console.log("IP address: ", ip);
    socket = io(ip);
-    start();
+    console.log(socket.r);
+    console.log(socket);
+   start();
 });
 
 function start(){
     socket.on("connect",function() {
         console.log("Socket connected");
     });
+    
     socket.on("init_text", function(init) {
       prev = init;
       editor.setValue(prev);
-    })
-
+    });
+    
+    socket.on("client_code", function(code){
+        console.log(code); 
+    });
     socket.on("disconnect", function() {
         console.log("Disconnected");
+    });
+    
+    socket.on("client_code", function(data){
+        console.log(data);
     });
 }
 function change_occured(data){
@@ -31,7 +40,7 @@ function change_occured(data){
   }
   var patch_list = dmp.patch_make(prev, cur, diff);
   prev = cur;
-  socket.emit("patch",patch_list);
+  socket.emit("host_patch",patch_list);
 }
 
 $(document).ready(function() {
