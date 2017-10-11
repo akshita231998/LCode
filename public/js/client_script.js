@@ -1,5 +1,4 @@
-
-var socket, socket_sender;
+var socket;
 var dmp = new diff_match_patch();
 var prev = "";
 var text_area = document.getElementById('text');
@@ -7,14 +6,14 @@ var text_area = document.getElementById('text');
 
 $.get("/sessionCheck",function(response) {
     console.log(response);
-    if(response=="invalid"){
+    if(response == "invalid") {
         window.location = "index.html";      
     }
 });
+
 $.get("/IpAddress",function(ip) {
    console.log("IP address: ", ip);
-    if(ip!=undefined && ip!=null)
-    {
+    if(ip!=undefined && ip!=null) {
         
         /*
             Contains error proxy connection refused!
@@ -24,8 +23,8 @@ $.get("/IpAddress",function(ip) {
         start();
     }
 });
-function start()
-{
+
+function start() {
     socket.on("connect",function() {
         console.log("Socket connected");
 
