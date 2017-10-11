@@ -6,18 +6,16 @@ $(document).ready(function() {
             $("#login_card").fadeOut(function() {
                 $("#unique_id_card").fadeIn();
             });
+            
             $.post('/api/unique_code',{code : random}, function(res){
-                if(res=="1")
-                {
+                if(res == "1") {
                     $("#unique_code").text(random);
                 }
-                else
-                {
+                else {
                     $("#unique_code").text(res);
                 }
             });
-        }
-        else {
+        } else {
             $("#host_name").addClass("invalid");
         }
     });
