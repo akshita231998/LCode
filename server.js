@@ -11,6 +11,8 @@ var prev = "";
 var unique_code = -1;
 var sess;
 var connections = [];
+var host_connected = 0;
+var host_id = null;
 
 var app = express();
 var server = http.createServer(app).listen(port);
@@ -23,7 +25,17 @@ app.use(express.static("./node_modules"));
 app.use(express.static("./public"));
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.urlencoded({extended: false}));
+
+app.use('/',function(req, res, next) {
+	console.log(`${req.method} requested for ${req.url}`);
+	next();
+});
+
+app.use(function(req, res, next){
+		console.log(`${req.method} ---- ${JSON.stringify(req.body)}`);
+		next();
+});
 
 io.on("connection", function(socket) {
     console.log(socket.id);
@@ -36,11 +48,15 @@ io.on("connection", function(socket) {
     });
     
     socket.on("error", function(e) {
-	console.log(e.message);
+	   console.log(e.message);
     });
 	
     socket.on("disconnect", function(){
         connections.splice(connections.indexOf(this), 1);
+        if(this.id == host_id) {
+            host_connected = 0;
+            host_id = null;
+        }
     });
     
     socket.emit("init_text", prev);
@@ -53,17 +69,13 @@ io.on("connection", function(socket) {
         connections[0].emit("client_code", code); 
     });
     
+    socket.on("host_connected", function(host_socket_id) {
+        host_connected = 1;
+        host_id = host_socket_id;
+    })
+    
 });
 
-//app.use(function(req, res, next){
-//	console.log(`${req.method} requested for ${req.url}`);
-//	next();
-//});
-//
-//app.use(function(req, res, next){
-//		console.log(`${req.method} ---- ${JSON.stringify(req.body)}`);
-//		next();
-//});
 
 app.post("/api/unique_code", function(req,res) {
     if(unique_code == -1) {
@@ -79,11 +91,39 @@ app.post("/api/validate_code", function(req,res) {
     if(unique_code != -1 && user_input == unique_code) {
         sess = req.session;
 	console.log("Setting session");
-	sess.loginState = "true";
+	sess.loginStateasClient = "true";
 	res.send("True");
     } else {
 	res.send("False");
-	sess.loginState = "false";
+	sess.loginStateasClient = "false";
+    }
+});
+
+app.get("/set_host_session", function(req, res){
+     sess = req.session;
+        console.log(sess, " in set host");
+     sess.loginStateasHost = "true";
+    console.log(sess, " after it is set");
+    res.send(null);
+});
+app.get("/api/get_host_session",function(req, res){
+    sess = req.session;
+    console.log(sess, " in get host");
+    if(sess.loginStateasHost=="true"){
+        res.send('valid');
+    }
+    else{
+        res.send('invalid');
+    }
+});
+
+app.get("/get_client_session", function(req, res) {
+    console.log("Sess: ",req.session); 
+    sess = req.session;
+    if(sess.loginStateasClient == "true") {
+        res.send("valid");
+    } else {
+        res.send("invalid");
     }
 });
 
@@ -96,15 +136,22 @@ app.get("/IpAddress", function(req, res){
         res.send(ip_address+":"+port); 
     }
 });
-
-app.get("/sessionCheck", function(req, res) {
-    console.log("Sess: ",req.session);
-    sess = req.session;
-    if(sess.loginState == "true") {
-        res.send("valid");
+app.get("/api/host_status", function(req, res) {
+    if(host_connected) {
+        res.send("connected");
     } else {
-        res.send("invalid");
+        res.send("disconnected");
     }
 });
 
 console.log("Server running on port " + port);
+
+app.get("/api/test", function(req, res)
+{
+        var session= req.session;
+        session.sampleText ="Hello";
+    res.send("hello");
+});
+app.get("/api/print", function(req, res){
+    console.log(req.session, " in api");
+});

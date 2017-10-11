@@ -1,4 +1,8 @@
 $(document).ready(function() {
+    
+   $.get("/api/test", function(data){
+       console.log(data);
+   });
    $("#submit-btn").click(function() {
       if($("#unique_code").val() != "" && $("#unique_code").val().length == 4 && $.isNumeric($("#unique_code").val())) {
             $("#login_card").addClass("disabled");

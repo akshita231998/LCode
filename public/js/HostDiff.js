@@ -4,15 +4,16 @@ var prev = "";
 var cur = "";
 
 var socket;
+
 $.get("/IpAddress",function(ip) {
    socket = io(ip);
-    console.log(socket.r);
-    console.log(socket);
    start();
 });
 
 function start(){
     socket.on("connect",function() {
+        console.log(socket.id);
+        socket.emit("host_connected", socket.id);
         console.log("Socket connected");
     });
     

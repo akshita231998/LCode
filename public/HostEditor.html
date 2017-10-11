@@ -3,6 +3,14 @@
 <head>
 	<title>Code mirror</title>
 	<link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
+    <script> 
+        var req = new XMLHttpRequest();
+        req.open('GET',"/api/get_host_session",false);
+        req.send(null);
+        if(req.responseText == "invalid") {
+            window.location = "/server.html";
+        }
+    </script>
 </head>
 <body>
 	<textarea class="codemirror-textarea" onKeyDown="onKeyDown();"></textarea>

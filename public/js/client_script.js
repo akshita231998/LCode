@@ -4,13 +4,7 @@ var prev = "";
 var text_area = document.getElementById('text');
 
 
-$.get("/sessionCheck",function(response) {
-    console.log(response);
-    if(response == "invalid") {
-        window.location = "index.html";      
-    }
-});
-
+    $.get("/api/print");
 $.get("/IpAddress",function(ip) {
    console.log("IP address: ", ip);
     if(ip!=undefined && ip!=null) {
@@ -20,6 +14,8 @@ $.get("/IpAddress",function(ip) {
             Server disconnected error!
         */
         socket = io(ip);
+        console.log(socket);
+        console.log(socket.id);
         start();
     }
 });
