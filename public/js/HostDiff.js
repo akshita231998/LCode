@@ -35,7 +35,16 @@ function start(){
     socket.on("chat_message_recieved", function(message){
         recieve_text(message); 
     });
+    
+    socket.on("connection_list", function(name_list){
+        /*
+            Call a function to display list
+        */ 
+        
+//        display_list(name_list);
+    });
 }
+
 function change_occured(data){
   cur = data;
   var diff = dmp.diff_main(prev,cur);
@@ -64,3 +73,18 @@ $(document).ready(function() {
     change_occured(editor.getValue());
   });
 });
+
+function request_code(name, state)
+{
+    /*
+    
+        If request started => state : 1
+        If request disabled => state: 0
+    */
+    
+    var status = {
+        host_name: name,
+        enabled: state 
+    };
+    socket.emit("request_code", JSON.stringify(status));
+}

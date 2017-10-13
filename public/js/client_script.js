@@ -4,6 +4,8 @@
 var socket;
 var dmp = new diff_match_patch();
 var prev = "";
+var socket_id=null; 
+var sharing_status=0;
 
 $.get("/IpAddress",function(ip) {
      if(ip!=undefined && ip!=null) {
@@ -22,7 +24,12 @@ $.get("/IpAddress",function(ip) {
 function start() {
     socket.on("connect",function() {
         console.log("Socket connected");
-        
+        socket_id = this.id;
+        $.post("pair_name_socket_id", {socket_id: this.id});
+    });
+    
+    socket.on("socket_id", function(var_socket_id){
+        socket_id = var_socket_id;
 
     });
     
@@ -45,6 +52,9 @@ function start() {
     socket.on("chat_message_recieved", function(message)    
     {
         receive_text(message);
+    });
+    socket.on("change_sharing_status", function(new_sharing_status){
+        sharing_status =new_sharing_status; 
     });
 }
  function receive_text(text) {
@@ -78,5 +88,13 @@ function send_text(e) {
             document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
             document.getElementById("msg_bar").value = "";
         }
-        
+}
+/*
+    call this method as soon as code in client box changes
+*/
+function keyPressed(text){
+    if(sharing_status == 1)
+    {
+        socket.emit("client_code", text);
+    }
 }

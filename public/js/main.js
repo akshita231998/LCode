@@ -43,9 +43,15 @@ $(document).ready(function() {
             $("#host_editor_link").attr("href",host_editor_link);
             $("#host_editor_link").text(host_disconnected_text);
             $("#host_editor_link").click(function() {
+                /*
                $.get("set_host_session", null, function() {
-                  window.location = "/HostEditor.html"; 
-               });
+               });*/
+                var host_name = $("#host_name").val();
+                console.log(host_name);
+                $.post("set_host_session", {name: host_name}, function(res)
+                {
+                    window.location = "/HostEditor.html";        
+                });
                 console.log("clicked");
             });
         } else {

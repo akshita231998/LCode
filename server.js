@@ -11,9 +11,13 @@ var prev = "";
 var unique_code = -1;
 var sess;
 var connections = [];
+/*map kaise bnate hai?*/
+var map_socketid_socket = {};
+var map_name_socket_id = {};
 var connection_names = [];
 var host_connected = 0;
 var host_id = null;
+var host_name=null;
 
 var app = express();
 var server = http.createServer(app).listen(port);
@@ -40,12 +44,18 @@ app.use(function(req, res, next){
 
 io.on("connection", function(socket) {
     console.log(socket.id);
-    connections.push(socket);
+//    connections.push(socket);
+    
+    map_socketid_socket[socket.id] = socket;
+    if(host_connected==1)
+    host_id.emit("connection_list", connection_names);
 	
+    socket.emit("socket_id", socket.id);
+    
     socket.on("host_patch", function(patch_list) {
-	socket.broadcast.emit("client_patch", patch_list);
-	var res = dmp.patch_apply(patch_list, prev);
-    prev = res[0];
+        socket.broadcast.emit("client_patch", patch_list);
+        var res = dmp.patch_apply(patch_list, prev);
+        prev = res[0];
     });
     
     socket.on("error", function(e) {
@@ -53,7 +63,8 @@ io.on("connection", function(socket) {
     });
 	
     socket.on("disconnect", function(){
-        connections.splice(connections.indexOf(this), 1);
+//        connections.splice(connections.indexOf(this), 1);
+        host_id.emit("connection_list", connection_names);
         if(this.id == host_id) {
             host_connected = 0;
             host_id = null;
@@ -61,21 +72,29 @@ io.on("connection", function(socket) {
     });
     
     socket.emit("init_text", prev);
-    
     /*
     *   Correct it to emit only to host and not     bradcasting to everyone!
     */
     socket.on("client_code", function(code) {
-        console.log("Emitting on: ", connections[0].id);
-        connections[0].emit("client_code", code); 
+        console.log("Emitting on: ", host_id);
+        host_id.emit("client_code", code); 
     });
+    
     
     socket.on("host_connected", function(host_socket_id) {
         host_connected = 1;
         host_id = host_socket_id;
+        map_socketid_socket[this.id ] =this;
+        map_name_socket_id[host_name] = this.id;
     });
     socket.on("client_message", function(message) {
         socket.broadcast.emit("chat_message_recieved", message);
+    });
+    
+    socket.on("request_code", function(status) {
+        var status_object = JSON.parse(status);
+        var socket_index = map_name_socket_id[name];  
+        map_socketid_socket[socket_index].emit("change_sharing_status", status_object.status);
     });
 });
 
@@ -125,12 +144,16 @@ app.post("/api/validate_code", function(req,res) {
     res.send(error_log);
 });
 
-app.get("/set_host_session", function(req, res){
+app.post("/set_host_session", function(req, res){
+    var name = req.body.name;
     sess = req.session;
-    console.log(sess, " in set host");
+    host_name = name;
     sess.loginStateasHost = "true";
-    console.log(sess, " after it is set");
+    sess.name = name;
     res.send(null);
+});
+app.post("pair_name_socket_id", function(req, res){
+     map_name_socket_id[req.session.name] = req.body.socket_id;
 });
 app.get("/api/get_host_session",function(req, res){
     sess = req.session;
@@ -186,8 +209,8 @@ console.log("Server running on port " + port);
 
 app.get("/api/test", function(req, res)
 {
-        var session= req.session;
-        session.sampleText ="Hello";
+    var session= req.session;
+    session.sampleText ="Hello";
     res.send("hello");
 });
 app.get("/api/print", function(req, res){
