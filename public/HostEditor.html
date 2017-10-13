@@ -7,8 +7,13 @@
         var req = new XMLHttpRequest();
         req.open('GET',"/api/get_host_session",false);
         req.send(null);
-        if(req.responseText == "invalid") {
+        var response = JSON.parse(req.response);
+        var client_name = "";
+        if(response.status == "invalid") {
             window.location = "/server.html";
+        }
+        else{
+            client_name = response.name;
         }
     </script>
 </head>

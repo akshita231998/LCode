@@ -32,6 +32,9 @@ function start(){
     socket.on("client_code", function(data){
         console.log(data);
     });
+    socket.on("chat_message_recieved", function(message){
+        recieve_text(message); 
+    });
 }
 function change_occured(data){
   cur = data;
@@ -42,6 +45,10 @@ function change_occured(data){
   var patch_list = dmp.patch_make(prev, cur, diff);
   prev = cur;
   socket.emit("host_patch",patch_list);
+}
+function sendChatMessage(message) {
+    var new_message = client_name +": "+message;
+    socket.emit("client_message",new_message);
 }
 
 $(document).ready(function() {

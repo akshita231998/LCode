@@ -11,6 +11,7 @@ var prev = "";
 var unique_code = -1;
 var sess;
 var connections = [];
+var connection_names = [];
 var host_connected = 0;
 var host_id = null;
 
@@ -44,7 +45,7 @@ io.on("connection", function(socket) {
     socket.on("host_patch", function(patch_list) {
 	socket.broadcast.emit("client_patch", patch_list);
 	var res = dmp.patch_apply(patch_list, prev);
-        prev = res[0];
+    prev = res[0];
     });
     
     socket.on("error", function(e) {
@@ -72,8 +73,10 @@ io.on("connection", function(socket) {
     socket.on("host_connected", function(host_socket_id) {
         host_connected = 1;
         host_id = host_socket_id;
-    })
-    
+    });
+    socket.on("client_message", function(message) {
+        socket.broadcast.emit("chat_message_recieved", message);
+    });
 });
 
 
@@ -88,43 +91,74 @@ app.post("/api/unique_code", function(req,res) {
 
 app.post("/api/validate_code", function(req,res) {
     var user_input = req.body.code;
-    if(unique_code != -1 && user_input == unique_code) {
+    var user_name  = req.body.name;
+    var indexOfName = connection_names.indexOf(user_name);
+    var error_log ={
+        name_valid: 0,
+        unique_code_valid: 0,
+        valid_login : 1
+    };
+    if(unique_code != -1 && user_input == unique_code && indexOfName==-1) {
+        error_log.name_valid = 1;
+        error_log.unique_code_valid = 1;
         sess = req.session;
-	console.log("Setting session");
-	sess.loginStateasClient = "true";
-	res.send("True");
+        sess.loginStateasClient = "true";
+        sess.client_name = user_name; 
+        connection_names.push(user_name);
     } else {
-	res.send("False");
-	sess.loginStateasClient = "false";
+        
+        error_log.valid_login = 0;
+        if(indexOfName == -1)
+        {
+            error_log.name_valid = 1;
+        }
+        if(unique_code==-1)
+        {
+            error_log.unique_code_valid = -1;
+        }
+        if(unique_code==user_input)
+        {
+           error_log.unique_code_valid = 1;
+        }
+        sess.loginStateasClient = "false";
     }
+    res.send(error_log);
 });
 
 app.get("/set_host_session", function(req, res){
-     sess = req.session;
-        console.log(sess, " in set host");
-     sess.loginStateasHost = "true";
+    sess = req.session;
+    console.log(sess, " in set host");
+    sess.loginStateasHost = "true";
     console.log(sess, " after it is set");
     res.send(null);
 });
 app.get("/api/get_host_session",function(req, res){
     sess = req.session;
-    console.log(sess, " in get host");
+    var details  = {
+        name: "",
+        status: ""
+    };
     if(sess.loginStateasHost=="true"){
-        res.send('valid');
+        details.status="valid";
+        details.name=sess.name;
     }
     else{
-        res.send('invalid');
+        details.status = "invalid";
     }
+    res.send(details);
 });
 
 app.get("/get_client_session", function(req, res) {
     console.log("Sess: ",req.session); 
     sess = req.session;
+    var details = {name:"", status:""};
     if(sess.loginStateasClient == "true") {
-        res.send("valid");
+        details.name = req.session.client_name;
+        details.status = "valid";
     } else {
-        res.send("invalid");
+        details.status = "invalid";
     }
+    res.send(details);
 });
 
 app.get("/IpAddress", function(req, res){
@@ -144,6 +178,10 @@ app.get("/api/host_status", function(req, res) {
     }
 });
 
+app.get("/api/get_user_name", function(req,res) {
+   var name = req.session.client_name;
+    res.send(name);
+});
 console.log("Server running on port " + port);
 
 app.get("/api/test", function(req, res)
@@ -155,3 +193,4 @@ app.get("/api/test", function(req, res)
 app.get("/api/print", function(req, res){
     console.log(req.session, " in api");
 });
+

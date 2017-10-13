@@ -23,8 +23,12 @@
                     <div class="card-content center">
                         <form>
                             <div class="input-field">
+                                <input id="client_display_name" type="text" autocomplete="on"/>
+                                <label for="client_display_name" data-error = "Invalid Name">Name</label>
+                            </div>
+                            <div class="input-field">
                                 <input id="unique_code" type="text" autocomplete="off"/>
-                                <label for="host_name" data-error="Invalid key">Enter unique code</label>
+                                <label for="unique_code" data-error="Invalid key">Enter unique code</label>
                             </div>
                             <a class="btn-floating btn-large waves-effect waves-light teal" id="submit-btn"><i class="material-icons">arrow_forward</i></a>
                         </form>

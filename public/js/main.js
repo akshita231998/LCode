@@ -1,4 +1,7 @@
-var host_editor_link = "/HostEditor.html";
+
+/*
+    This script is used in server.html
+*/var host_editor_link = "/HostEditor.html";
 var client_home_pg_link = "/index.html";
 var host_connected_text = "Party hosted! Join it";
 var host_disconnected_text = "All Set Go!";

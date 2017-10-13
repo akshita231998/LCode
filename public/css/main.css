@@ -35,3 +35,62 @@ h1 {
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+.connected{
+	border-left: 1px;
+	border-color: #111111;
+	height: 100%;
+	width: 100%;
+}
+.head{
+	text-align: center;
+	background-color:#00695c; 
+	color:white;
+}
+.card-panel{
+  margin:10px;
+}
+#msg-box {
+    overflow-y: scroll;
+    max-height: 50vh;
+}
+.receivedMsg {
+    text-align: left;
+    padding: 5px;
+    display: block;
+}
+.receivedMsg > p {
+    background: #00695c;
+    max-width: 30vw;
+    padding: 10px;
+    padding-left: 20px;
+    word-wrap: all;
+    color: #fff;
+    display: block;
+    border-radius: 30px;
+    margin-left: 20%;
+}
+.sentMsg {
+    padding: 5px;
+    display: block;
+    width: 100%;
+}
+.sentMsg > p {
+    background: #4db6ac;
+    max-width: 30vw;
+    width: auto;
+    padding: 10px;
+    text-align: left;
+    padding-left: 20px;
+    margin: 0px;
+    word-wrap: all;
+    color: #fff;
+    display: block;
+    position: relative;
+    left: 60%;
+    border-radius: 30px;
+}
+#msg_bar {
+    width: 30%;
+    padding: 5px;
+    margin-top: 50px;
+}
