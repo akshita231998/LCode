@@ -10,28 +10,29 @@ $(document).ready(function() {
     $("#submit-btn").click(function() {
         if($("#host_name").val() != "") {
             var random = (Math.floor(Math.random() * 10000) + 1000);
-            if(random >=10000)
-            {
+            if(random >=10000) {
                 random-=1001;
             }
-
             $("#login_card").fadeOut(function() {
                 $("#unique_id_card").fadeIn();
             });
-
-            $.post('/api/unique_code',{code : random}, function(res){
+            //Send unique code to the server
+            $.post('/api/unique_code',{code : random}, function(res) {
                 $("#unique_code").text(res);
             });
         } else {
             $("#host_name").addClass("invalid");
         }
     });
+    
     $("#cancel-party-btn").click(function() {
         $("#unique_id_card").fadeOut(function() {
             $("#login_card").fadeIn();
             $("#unique_code").text("");
         });
     });
+
+    //Check if a party has been hosted already
     $.get("/api/host_status", function(res) {
         host_status = res;
         if(res == "disconnected") {
