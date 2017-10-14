@@ -76,14 +76,17 @@ io.on("connection", function(socket) {
          if(this.id == host_id) {
              host_connected = 0;
              host_id = null;
-         }
-         else
-         {
-            console.log("Disconnection occured: ", socket.id);
-             var name;
-             
-                 console.dir(map_name_socket_id);;
-             
+         } else {
+            Object.keys(map_name_socket_id).forEach(function(name) {
+              var str = map_name_socket_id[name];
+              if(!str.localeCompare(socket.id)) {
+                delete map_name_socket_id[name];
+                delete client_status_map[name];
+              }
+            });
+            if(host_connected) {
+              map_socketid_socket[host_id].emit("connection_list", client_status_map);
+            }
          }
      });
 
@@ -160,7 +163,7 @@ app.post("/api/validate_code", function(req,res) {
             name: user_name,
             sharing_enabled: 0
         };
-        connection_names.push(connection_names);
+        connection_names.push(user_name);
         var object = {
             status: 0
         };
@@ -193,13 +196,12 @@ app.post("/set_host_session", function(req, res){
 
 //Storing socket_id and name pairs for clients
 app.post("/pair_name_socket_id", function(req, res) {
-    console.log(req.session.name);
-     map_name_socket_id[req.session.name] = req.body.socket_id;
+    console.log(req.session.client_name);
+     map_name_socket_id[req.session.client_name] = req.body.socket_id;
 });
 
 app.post("/destory_session", function(req, res){
-    if(req.session!=null)        
-    {
+    if(req.session != null) {
         req.session.destroy();
     }
 });
