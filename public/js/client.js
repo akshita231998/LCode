@@ -1,14 +1,14 @@
 $(document).ready(function() {
-    
+
    $.get("/api/test", function(data){
        console.log(data);
    });
    $("#submit-btn").click(function() {
-       
+
        var name = $('#client_display_name').val();
        var unique_code = $("#unique_code").val();
-       
-      if(name!="" && unique_code!= "" &&   unique_code.length == 4 && $.isNumeric(unique_code)) {
+
+      if(name != "" && unique_code != "" && unique_code.length == 4 && $.isNumeric(unique_code)) {
             $("#login_card").addClass("disabled");
             $("#progress_bar").removeClass("hidden");
 

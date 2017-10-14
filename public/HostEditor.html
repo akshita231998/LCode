@@ -3,7 +3,7 @@
 <head>
 	<title>Code mirror</title>
 	<link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
-    <script> 
+    <script>
         var req = new XMLHttpRequest();
         req.open('GET',"/api/get_host_session",false);
         req.send(null);
@@ -11,8 +11,7 @@
         var client_name = "";
         if(response.status == "invalid") {
             window.location = "/server.html";
-        }
-        else{
+        } else {
             client_name = response.name;
         }
     </script>

@@ -10,14 +10,13 @@ var port = 3000;
 var prev = "";
 var unique_code = -1;
 var sess;
-var connections = [];
 var map_socketid_socket = {};
 var map_name_socket_id = {};
 var connection_names = [];
-var client_status_map={};
+var client_status_map = {};
 var host_connected = 0;
 var host_id = null;
-var host_name=null;
+var host_name = null;
 
 var app = express();
 var server = http.createServer(app).listen(port);
@@ -32,16 +31,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+//Function to get socket from client name
 function getSocketfromName(name) {
     var socket_index = map_name_socket_id[name];
-    if(socket_index!=-1) {
+    if(socket_index != -1) {
         return map_socketid_socket[socket_index];
-    }
-    else{
+    } else {
         console.log("Found an invalid socket name!");
         return null;
     }
 }
+
 app.use('/',function(req, res, next) {
 	console.log(`${req.method} requested for ${req.url}`);
 	next();
@@ -53,87 +53,87 @@ app.use(function(req, res, next){
 });
 
 io.on("connection", function(socket) {
-    console.log(socket.id);
-//    connections.push(socket);
-    
+
     map_socketid_socket[socket.id] = socket;
-    if(host_connected==1) {
+
+    //Sending list of active connections to host everytime a client connects
+    if(host_connected == 1) {
         map_socketid_socket[host_id].emit("connection_list", client_status_map);
     }
-	
+
+    //Send socket_id to client side
     socket.emit("socket_id", socket.id);
-    
+
+    //Broadcast the host code patch list to all the clients
     socket.on("host_patch", function(patch_list) {
         socket.broadcast.emit("client_patch", patch_list);
         var res = dmp.patch_apply(patch_list, prev);
         prev = res[0];
     });
-    
-    
+
+    //Send list of new active client connections to host
     socket.on("disconnect", function(){
-//        connections.splice(connections.indexOf(this), 1);
         map_socketid_socket[host_id].emit("connection_list", client_status_map);
         if(this.id == host_id) {
             host_connected = 0;
             host_id = null;
         }
     });
-    
+
+    //Send initial host code to client
     socket.emit("init_text", prev);
-    /*
-    *   Correct it to emit only to host and not     bradcasting to everyone!
-    */
+
+    //Sending client code to host
     socket.on("client_code", function(code) {
-        // client -----> host
         console.log("Emitting on: ", host_id);
-        map_socketid_socket[host_id].emit("client_code", code); 
+        map_socketid_socket[host_id].emit("client_code", code);
     });
-    
+
+    //Sending client's edited code back to client
     socket.on("client_code_changed", function(change_object) {
-        // host -------> client
-        client_socket = getSocketfromName(change_object.name); 
-        if(client_socket!=null) {
+        client_socket = getSocketfromName(change_object.name);
+        if(client_socket != null) {
             client_socket.emit("new_code", change_object.code);
-        }
-        else {
-            console.log("Trying to send code to an invalid client");        
+        } else {
+            console.log("Trying to send code to an invalid client");
         }
     });
 
+    //Storing host's info
     socket.on("host_connected", function(host_socket_id) {
-//        host -----> server
         host_connected = 1;
         host_id = host_socket_id;
         map_socketid_socket[this.id] =this;
         map_name_socket_id[host_name] = this.id;
     });
+
+    //Chat message functionality
     socket.on("client_message", function(message) {
-//        host/client ------> everyone else
         socket.broadcast.emit("chat_message_recieved", message);
     });
-    
+
+    //To change sharing status of client on host's request
     socket.on("request_code", function(status) {
-        // host -----> particular client
         var status_object = JSON.parse(status);
         getSocketfromName(status_object.target_name).emit("change_sharing_status", status_object.status);
     });
-    
+
+    //Sending list of clients with their sharing status to host
     socket.on("client_sharing_status", function(client_status) {
         client_status_map[client_status.name] = client_status.status;
         map_socketid_socket[host_id].emit("client_details",client_status_map);
     });
 });
 
-
+//Sending unique code to the host (unique code will remain same)
 app.post("/api/unique_code", function(req,res) {
     if(unique_code == -1) {
         unique_code = req.body.code;
-        res.send("1");
-    } else {   
-        res.send(unique_code);
     }
+    res.send(unique_code);
 });
 
+//Validating unique code and name entered by client and sending error_log to client
 app.post("/api/validate_code", function(req,res) {
     var user_input = req.body.code;
     var user_name  = req.body.name;
@@ -143,7 +143,7 @@ app.post("/api/validate_code", function(req,res) {
         unique_code_valid: 0,
         valid_login : 1
     };
-    if(unique_code != -1 && user_input == unique_code && indexOfName==-1) {
+    if(unique_code != -1 && user_input == unique_code && indexOfName == -1) {
         error_log.name_valid = 1;
         error_log.unique_code_valid = 1;
         sess = req.session;
@@ -159,18 +159,14 @@ app.post("/api/validate_code", function(req,res) {
         };
         client_status_map[user_name] = object;
     } else {
-        
         error_log.valid_login = 0;
-        if(indexOfName == -1)
-        {
+        if(indexOfName == -1) {
             error_log.name_valid = 1;
         }
-        if(unique_code==-1)
-        {
+        if(unique_code==-1) {
             error_log.unique_code_valid = -1;
         }
-        if(unique_code==user_input)
-        {
+        if(unique_code==user_input) {
            error_log.unique_code_valid = 1;
         }
         sess.loginStateasClient = "false";
@@ -178,6 +174,7 @@ app.post("/api/validate_code", function(req,res) {
     res.send(error_log);
 });
 
+//Setting host session
 app.post("/set_host_session", function(req, res){
     var name = req.body.name;
     sess = req.session;
@@ -186,27 +183,31 @@ app.post("/set_host_session", function(req, res){
     sess.name = name;
     res.send(null);
 });
+
+//Storing socket_id and name pairs for clients
 app.post("/pair_name_socket_id", function(req, res){
      map_name_socket_id[req.session.name] = req.body.socket_id;
 });
+
+//Check for valid host session to allow access to host editor only if it is a valid host session
 app.get("/api/get_host_session",function(req, res){
     sess = req.session;
     var details  = {
         name: "",
         status: ""
     };
-    if(sess.loginStateasHost=="true"){
-        details.status="valid";
-        details.name=sess.name;
-    }
-    else{
+    if(sess.loginStateasHost == "true"){
+        details.status = "valid";
+        details.name = sess.name;
+    } else {
         details.status = "invalid";
     }
     res.send(details);
 });
 
+//Check for valid client session to allow access to client editor only if it is a valid session
 app.get("/get_client_session", function(req, res) {
-    console.log("Sess: ",req.session); 
+    console.log("Sess: ",req.session);
     sess = req.session;
     var details = {
         name:"",
@@ -221,15 +222,16 @@ app.get("/get_client_session", function(req, res) {
     res.send(details);
 });
 
+//Send ip_address to client to open socket connection
 app.get("/IpAddress", function(req, res){
-    console.log(ip_address);
     if(ip_address == null || ip_address == undefined) {
         res.send("0");
     } else {
-        console.log("sending");
-        res.send(ip_address+":"+port); 
+        res.send(ip_address+":"+port);
     }
 });
+
+//Send host status to check if party has been hosted or not
 app.get("/api/host_status", function(req, res) {
     if(host_connected) {
         res.send("connected");
@@ -238,19 +240,4 @@ app.get("/api/host_status", function(req, res) {
     }
 });
 
-app.get("/api/get_user_name", function(req,res) {
-   var name = req.session.client_name;
-    res.send(name);
-});
 console.log("Server running on port " + port);
-
-app.get("/api/test", function(req, res)
-{
-    var session= req.session;
-    session.sampleText ="Hello";
-    res.send("hello");
-});
-app.get("/api/print", function(req, res){
-    console.log(req.session, " in api");
-});
-
