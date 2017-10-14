@@ -34,14 +34,15 @@ function start() {
     });
 
     socket.on("chat_message_recieved", function(message){
-        recieve_text(message);
+        console.log(message);
+//        recieve_text(message);
     });
 
     socket.on("connection_list", function(name_status_map){
         /*
             Call a function to display list
         */
-
+        console.dir(name_status_map);
 //        display_list(name_list);
     });
 }

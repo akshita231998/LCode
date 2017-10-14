@@ -126,3 +126,7 @@ function setCodeInClientBox(code){
         It is called whenever any change to client's code is made by host
     */
 }
+
+function logout() {
+    $.post("/destory_session", {name: client_name});
+}

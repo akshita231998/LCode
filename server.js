@@ -73,10 +73,17 @@ io.on("connection", function(socket) {
 
     //Send list of new active client connections to host
     socket.on("disconnect", function(){
-        map_socketid_socket[host_id].emit("connection_list", client_status_map);
         if(this.id == host_id) {
             host_connected = 0;
             host_id = null;
+        }
+        else
+        {
+            map_socketid_socket.delete(socket.id);
+            map_name_socket_id = map_name_socket_id.filter(functions(socket_id){
+                return socket_id!=socket.id;                                            
+            });
+            map_socketid_socket[host_id].emit("connection_list", client_status_map);
         }
     });
 
@@ -138,6 +145,7 @@ app.post("/api/validate_code", function(req,res) {
     var user_input = req.body.code;
     var user_name  = req.body.name;
     var indexOfName = connection_names.indexOf(user_name);
+    sess = req.session;
     var error_log ={
         name_valid: 0,
         unique_code_valid: 0,
@@ -146,7 +154,6 @@ app.post("/api/validate_code", function(req,res) {
     if(unique_code != -1 && user_input == unique_code && indexOfName == -1) {
         error_log.name_valid = 1;
         error_log.unique_code_valid = 1;
-        sess = req.session;
         sess.loginStateasClient = "true";
         sess.client_name = user_name;
         var connection_details = {
@@ -187,6 +194,13 @@ app.post("/set_host_session", function(req, res){
 //Storing socket_id and name pairs for clients
 app.post("/pair_name_socket_id", function(req, res){
      map_name_socket_id[req.session.name] = req.body.socket_id;
+});
+
+app.post("/destory_session", function(req, res){
+    if(req.session!=null)        
+    {
+        req.session.destroy();
+    }
 });
 
 //Check for valid host session to allow access to host editor only if it is a valid host session
