@@ -95,3 +95,6 @@ h1 {
     padding: 5px;
     margin-top: 50px;
 }
+#client_editor {
+    display: none;
+}
