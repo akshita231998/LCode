@@ -24,19 +24,19 @@ function start(){
     
     socket.on("client_code", function(code){
         console.log(code); 
+        /*
+            Call a function to display selected client's shared code.
+        */
     });
     socket.on("disconnect", function() {
         console.log("Disconnected");
     });
     
-    socket.on("client_code", function(data){
-        console.log(data);
-    });
     socket.on("chat_message_recieved", function(message){
         recieve_text(message); 
     });
     
-    socket.on("connection_list", function(name_list){
+    socket.on("connection_list", function(name_status_map){
         /*
             Call a function to display list
         */ 
@@ -53,7 +53,17 @@ function change_occured(data){
   }
   var patch_list = dmp.patch_make(prev, cur, diff);
   prev = cur;
+
   socket.emit("host_patch",patch_list);
+}
+
+function client_code_changed(client_name,complete_code)
+{
+    var change_object = {
+        name: client_name,
+        code: complete_code
+    };
+    socket.emit("client_new_code",change_object);
 }
 function sendChatMessage(message) {
     var new_message = client_name +": "+message;
@@ -77,13 +87,13 @@ $(document).ready(function() {
 function request_code(name, state)
 {
     /*
-    
+        Call this function on name click, or while closing shared code
         If request started => state : 1
         If request disabled => state: 0
     */
     
     var status = {
-        host_name: name,
+        target_name: name,
         enabled: state 
     };
     socket.emit("request_code", JSON.stringify(status));

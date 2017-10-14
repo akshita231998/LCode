@@ -11,10 +11,10 @@ var prev = "";
 var unique_code = -1;
 var sess;
 var connections = [];
-/*map kaise bnate hai?*/
 var map_socketid_socket = {};
 var map_name_socket_id = {};
 var connection_names = [];
+var client_status_map={};
 var host_connected = 0;
 var host_id = null;
 var host_name=null;
@@ -32,6 +32,16 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+function getSocketfromName(name) {
+    var socket_index = map_name_socket_id[name];
+    if(socket_index!=-1) {
+        return map_socketid_socket[socket_index];
+    }
+    else{
+        console.log("Found an invalid socket name!");
+        return null;
+    }
+}
 app.use('/',function(req, res, next) {
 	console.log(`${req.method} requested for ${req.url}`);
 	next();
@@ -47,8 +57,9 @@ io.on("connection", function(socket) {
 //    connections.push(socket);
     
     map_socketid_socket[socket.id] = socket;
-    if(host_connected==1)
-    host_id.emit("connection_list", connection_names);
+    if(host_connected==1) {
+        map_socketid_socket[host_id].emit("connection_list", client_status_map);
+    }
 	
     socket.emit("socket_id", socket.id);
     
@@ -58,13 +69,10 @@ io.on("connection", function(socket) {
         prev = res[0];
     });
     
-    socket.on("error", function(e) {
-	   console.log(e.message);
-    });
-	
+    
     socket.on("disconnect", function(){
 //        connections.splice(connections.indexOf(this), 1);
-        host_id.emit("connection_list", connection_names);
+        map_socketid_socket[host_id].emit("connection_list", client_status_map);
         if(this.id == host_id) {
             host_connected = 0;
             host_id = null;
@@ -76,25 +84,43 @@ io.on("connection", function(socket) {
     *   Correct it to emit only to host and not     bradcasting to everyone!
     */
     socket.on("client_code", function(code) {
+        // client -----> host
         console.log("Emitting on: ", host_id);
-        host_id.emit("client_code", code); 
+        map_socketid_socket[host_id].emit("client_code", code); 
     });
     
-    
+    socket.on("client_code_changed", function(change_object) {
+        // host -------> client
+        client_socket = getSocketfromName(change_object.name); 
+        if(client_socket!=null) {
+            client_socket.emit("new_code", change_object.code);
+        }
+        else {
+            console.log("Trying to send code to an invalid client");        
+        }
+    });
+
     socket.on("host_connected", function(host_socket_id) {
+//        host -----> server
         host_connected = 1;
         host_id = host_socket_id;
-        map_socketid_socket[this.id ] =this;
+        map_socketid_socket[this.id] =this;
         map_name_socket_id[host_name] = this.id;
     });
     socket.on("client_message", function(message) {
+//        host/client ------> everyone else
         socket.broadcast.emit("chat_message_recieved", message);
     });
     
     socket.on("request_code", function(status) {
+        // host -----> particular client
         var status_object = JSON.parse(status);
-        var socket_index = map_name_socket_id[name];  
-        map_socketid_socket[socket_index].emit("change_sharing_status", status_object.status);
+        getSocketfromName(status_object.target_name).emit("change_sharing_status", status_object.status);
+    });
+    
+    socket.on("client_sharing_status", function(client_status) {
+        client_status_map[client_status.name] = client_status.status;
+        map_socketid_socket[host_id].emit("client_details",client_status_map);
     });
 });
 
@@ -122,8 +148,16 @@ app.post("/api/validate_code", function(req,res) {
         error_log.unique_code_valid = 1;
         sess = req.session;
         sess.loginStateasClient = "true";
-        sess.client_name = user_name; 
-        connection_names.push(user_name);
+        sess.client_name = user_name;
+        var connection_details = {
+            name: user_name,
+            sharing_enabled: 0
+        };
+        connection_names.push(connection_names);
+        var object = {
+            status: 0
+        };
+        client_status_map[user_name] = object;
     } else {
         
         error_log.valid_login = 0;
@@ -152,7 +186,7 @@ app.post("/set_host_session", function(req, res){
     sess.name = name;
     res.send(null);
 });
-app.post("pair_name_socket_id", function(req, res){
+app.post("/pair_name_socket_id", function(req, res){
      map_name_socket_id[req.session.name] = req.body.socket_id;
 });
 app.get("/api/get_host_session",function(req, res){
@@ -174,7 +208,10 @@ app.get("/api/get_host_session",function(req, res){
 app.get("/get_client_session", function(req, res) {
     console.log("Sess: ",req.session); 
     sess = req.session;
-    var details = {name:"", status:""};
+    var details = {
+        name:"",
+        status:""
+    };
     if(sess.loginStateasClient == "true") {
         details.name = req.session.client_name;
         details.status = "valid";

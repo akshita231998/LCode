@@ -5,8 +5,8 @@ var socket;
 var dmp = new diff_match_patch();
 var prev = "";
 var socket_id=null; 
-var sharing_status=0;
-
+var sharing_status_server=0;
+var sharing_status_client = 0;
 $.get("/IpAddress",function(ip) {
      if(ip!=undefined && ip!=null) {
         
@@ -36,7 +36,7 @@ function start() {
      socket.on("init_text", function(init) {
       prev = init;
       host_editor.setValue(prev);
-    })
+    });
 
     socket.on("disconnect", function() {
         console.log("Disconnected");
@@ -54,7 +54,13 @@ function start() {
         receive_text(message);
     });
     socket.on("change_sharing_status", function(new_sharing_status){
-        sharing_status =new_sharing_status; 
+        sharing_status_server =new_sharing_status; 
+        /*
+            Also disable the sharing click button by client, so that client cannot disable sharing while host is woring on that.
+        */
+    });
+    socket.on("new_code", function(code){
+        setCodeInClientBox(code);
     });
 }
  function receive_text(text) {
@@ -93,8 +99,30 @@ function send_text(e) {
     call this method as soon as code in client box changes
 */
 function keyPressed(text){
-    if(sharing_status == 1)
+    if(sharing_status_client==1 && sharing_status_server == 1)
     {
         socket.emit("client_code", text);
     }
+}
+
+function sharing_button_clicked(state) {
+    /*
+        State = 0 if deselected
+        State = 1 if selected
+    */
+    sharing_status_client = state;
+    /*
+        This is for displaying label of sharing on host side in right side of client name 
+    */
+    var client_status = {
+        name: client_name,
+        status: sharing_status_client
+    };
+    socket.emit("sharing_status_client", client_status);    
+    
+}
+function setCodeInClientBox(code){
+    /*
+        It is called whenever any change to client's code is made by host 
+    */
 }
