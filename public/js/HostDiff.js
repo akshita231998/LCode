@@ -2,7 +2,9 @@ var code,editor;
 var dmp = new diff_match_patch();
 var prev = "";
 var cur = "";
-
+var last_client_name="";
+var ed_can_emit = 1;
+var name_status_map_local={};
 var socket;
 function receive_text(text) {
     	 var msg = document.createElement("div");
@@ -31,8 +33,10 @@ function start() {
     });
 
     socket.on("client_code", function(code){
+        ed_can_emit = 0;
         console.log(code);
         ed.setValue(code);
+        ed_can_emit = 1;
     });
     
     socket.on("disconnect", function() {
@@ -45,10 +49,20 @@ function start() {
     });
 
     socket.on("connection_list", function(name_status_map){
-        $.each( name_status_map, function( name, status ) {
-            $("#connected_box").append('<div class="card connected_users"><div class="card-content"><h5>'+name+'</h5><p class="red-text">Wants to review!</p></div></div>');
+        console.log("Here map ",name_status_map);
+        name_status_map_local = name_status_map;
+        $("#connected_box").html('<h4>Connected</h4><div class="card" id="host_card"><div class="card-content" onclick="back_to_host();"><h5>Your code</h5></div></div>');
+        $.each(name_status_map, function( name, status ) {
+            
+            if(status.status == 1)
+            {
+                $("#connected_box").append('<div class="card connected_users" onclick="change_editor(this);"><div class="card-content"><h5>'+name+'</h5><i class="material-icons blue-text">fiber_manual_record</i></div></div>');
+            }
+            else{
+                $("#connected_box").append('<div class="card connected_users"><div class="card-content"><h5>'+name+'</h5></div></div>');
+            }
+            
         });
-//        display_list(name_list);
     });
 }
 
@@ -65,11 +79,14 @@ function change_occured(data) {
 }
 
 function client_code_changed(client_name,complete_code) {
-    var change_object = {
-        name: client_name,
-        code: complete_code
-    };
-    socket.emit("client_new_code",change_object);
+    if(ed_can_emit == 1)
+    {
+        var change_object = {
+            name: client_name,
+            code: complete_code
+        };
+        socket.emit("client_new_code",change_object);
+    }
 }
 
 function sendChatMessage(message) {
@@ -90,6 +107,30 @@ function send_text(e) {
             document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
             document.getElementById("msg_bar").value = "";
         }
+}
+
+function change_editor(obj) {
+    console.dir();
+    if(last_client_name!="")
+    {
+        request_code(last_client_name, 0);
+    }
+    last_client_name = obj.children[0].children[0].innerHTML;
+    $("#client_name_box").html(last_client_name+'\'s code');
+    request_code(last_client_name, 1);
+    $("#host_editor").fadeOut(200, function() {
+       $("#client_editor").fadeIn(200); 
+    });
+}; 
+
+function back_to_host() {
+    if(last_client_name!="")
+    {
+        request_code(last_client_name, 0);
+        $("#client_editor").fadeOut(200, function() {
+               $("#host_editor").fadeIn(200); 
+        });
+    }
 }
 
 $(document).ready(function() {
@@ -113,18 +154,9 @@ $(document).ready(function() {
     lineNumbers : true
   });
     ed.on("changes", function(e) {
-        client_code_changed(client_name, editor.getValue());
+        client_code_changed(last_client_name, ed.getValue());
   });
-    $(".connected_users").click(function() {
-        $("#host_editor").fadeOut(200, function() {
-           $("#client_editor").fadeIn(200); 
-        });
-    });
-    $("#host_card").click(function() {
-        $("#client_editor").fadeOut(200, function() {
-           $("#host_editor").fadeIn(200); 
-        });
-    });
+    
 });
 
 function request_code(name, state)
@@ -134,7 +166,6 @@ function request_code(name, state)
         If request started => state : 1
         If request disabled => state: 0
     */
-
     var status = {
         target_name: name,
         enabled: state

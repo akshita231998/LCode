@@ -27,8 +27,8 @@
                     <h6 class="flow-text">Host's Code</h6>
                     <a class="btn-floating halfway-fab waves-effect waves-light teal btn-large"><i class="material-icons">cloud_download</i></a>
                 </div>
-                <div class="card-content">
-                    <textarea id="hostTextarea"></textarea>
+                <div class="card-content" id="host_text_area">
+                    <textarea id="hostTextarea" disabled></textarea>
                 </div>
             </div>
 		</div>
@@ -37,7 +37,7 @@
 			<div class="card">
                 <div class="card-panel head card-content">
                     <h6 class="flow-text">My Code</h6>
-                    <a class="btn-floating halfway-fab waves-effect waves-light teal btn-large"><i class="material-icons">cloud_upload</i></a>
+                    <a class="btn-floating halfway-fab waves-effect waves-light teal btn-large upload_toggler"><i class="material-icons share_icon">cloud_off</i></a>
                 </div>
                 <div class="card-content">
                     <textarea id="myTextarea"></textarea>
@@ -56,6 +56,11 @@
                 </div>
             </div>
             <input type="text" placeholder="Enter your message" onkeydown="send_text(event)" id="msg_bar" class="white">
+        </div>
+    </div>
+    <div class="row">
+        <div class="right-align">
+            <a class="btn logout_button" style="margin-right: 5px">Logout</a>
         </div>
     </div>
 </body>

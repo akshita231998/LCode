@@ -6,6 +6,16 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
+<script>
+      var request = new XMLHttpRequest();
+      request.open('GET','/get_client_session',false);
+      request.send(null);
+      var details = JSON.parse(request.response);
+      if(details.status == 'valid') {
+          window.location = 'client_text_editor.html';
+      }
+      var client_name = details.name;
+</script>
 <body>
     <div class="container">
         <h1 class="center">Lc<i class="material-icons medium">wifi_tethering</i>de</h1>

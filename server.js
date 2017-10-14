@@ -55,12 +55,12 @@ app.use(function(req, res, next){
 io.on("connection", function(socket) {
 
     map_socketid_socket[socket.id] = socket;
-
     //Sending list of active connections to host everytime a client connects
-    if(host_connected == 1) {
+    if(host_id!=null)
+    {
+        console.dir("map ", client_status_map);
         map_socketid_socket[host_id].emit("connection_list", client_status_map);
     }
-
     //Send socket_id to client side
     socket.emit("socket_id", socket.id);
 
@@ -85,7 +85,8 @@ io.on("connection", function(socket) {
                 connection_names.splice(connection_names.indexOf(name),1);
               }
             });
-            if(host_connected) {
+            if(host_id!=null) {
+                console.log("sending", client_status_map);
               map_socketid_socket[host_id].emit("connection_list", client_status_map);
             }
          }
@@ -97,11 +98,15 @@ io.on("connection", function(socket) {
     //Sending client code to host
     socket.on("client_code", function(code) {
         console.log("Emitting on: ", host_id);
-        map_socketid_socket[host_id].emit("client_code", code);
+        if(host_id!=null)
+        {
+            map_socketid_socket[host_id].emit("client_code", code);
+        }
     });
 
     //Sending client's edited code back to client
-    socket.on("client_code_changed", function(change_object) {
+    socket.on("client_new_code", function(change_object) {
+        console.log(change_object);
         client_socket = getSocketfromName(change_object.name);
         if(client_socket != null) {
             client_socket.emit("new_code", change_object.code);
@@ -116,6 +121,7 @@ io.on("connection", function(socket) {
         host_id = host_socket_id;
         map_socketid_socket[this.id] =this;
         map_name_socket_id[host_name] = this.id;
+        this.emit("connection_list", client_status_map);
     });
 
     //Chat message functionality
@@ -126,13 +132,14 @@ io.on("connection", function(socket) {
     //To change sharing status of client on host's request
     socket.on("request_code", function(status) {
         var status_object = JSON.parse(status);
-        getSocketfromName(status_object.target_name).emit("change_sharing_status", status_object.status);
+        console.log("code requested ",status_object.target_name, status_object.enabled);
+        getSocketfromName(status_object.target_name).emit("change_sharing_status", status_object.enabled);
     });
 
     //Sending list of clients with their sharing status to host
-    socket.on("client_sharing_status", function(client_status) {
-        client_status_map[client_status.name] = client_status.status;
-        map_socketid_socket[host_id].emit("client_details",client_status_map);
+    socket.on("sharing_status_client", function(client_status) {
+        client_status_map[client_status.name] = client_status;
+        map_socketid_socket[host_id].emit("connection_list",client_status_map);
     });
 });
 
@@ -143,7 +150,6 @@ app.post("/api/unique_code", function(req,res) {
     }
     res.send(unique_code);
 });
-
 //Validating unique code and name entered by client and sending error_log to client
 app.post("/api/validate_code", function(req,res) {
     var user_input = req.body.code;
@@ -160,6 +166,7 @@ app.post("/api/validate_code", function(req,res) {
         error_log.unique_code_valid = 1;
         sess.loginStateasClient = "true";
         sess.client_name = user_name;
+        sess.first_time_login = 1;
         var connection_details = {
             name: user_name,
             sharing_enabled: 0
@@ -217,6 +224,7 @@ app.get("/api/get_host_session",function(req, res){
     if(sess.loginStateasHost == "true"){
         details.status = "valid";
         details.name = sess.name;
+       
     } else {
         details.status = "invalid";
     }
@@ -234,6 +242,18 @@ app.get("/get_client_session", function(req, res) {
     if(sess.loginStateasClient == "true") {
         details.name = req.session.client_name;
         details.status = "valid";
+        if(sess.first_time_login !=1)
+        {
+
+            connection_names.push(sess.client_name);
+            var object = {
+                status: 0
+            };
+            client_status_map[sess.client_name] = object;
+        }
+        else{
+            sess.first_time_login = 0;
+        }
     } else {
         details.status = "invalid";
     }

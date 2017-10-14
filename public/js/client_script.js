@@ -7,7 +7,7 @@ var prev = "";
 var socket_id=null;
 var sharing_status_server=0;
 var sharing_status_client = 0;
-
+var client_can_emit = 1;
 $.get("/IpAddress",function(ip) {
      if(ip != undefined && ip != null) {
         /*
@@ -20,7 +20,20 @@ $.get("/IpAddress",function(ip) {
         start();
     }
 });
+$('.upload_toggler').on('click', function(){
+    console.log("ABC");
+    local_sharing_toggle();
+});
 
+$('.logout_button').on('click', function(){
+    socket.disconnect();
+   $.post("/destroy_session"); 
+    socket_id=null;
+    sharing_status_server = 0;
+    sharing_status_client = 0;
+    socket = null;
+    window.location = "index.html";
+});
 function start() {
     socket.on("connect",function() {
         console.log("Socket connected");
@@ -55,18 +68,29 @@ function start() {
 
     socket.on("change_sharing_status", function(new_sharing_status) {
         sharing_status_server = new_sharing_status;
+        if(sharing_status_server == 1)
+        {
+            $('.upload_toggler').addClass("disabled");
+            $('.upload_toggler').removeClass("enabled");
+        }
+        else
+        {
+            $('.upload_toggler').addClass("enabled");
+            $('.upload_toggler').removeClass("disabled");
+        }
+        console.log("Sharing requested ", new_sharing_status);
         /*
             Change button text accordingly
             Also disable the sharing click button by client, so that client cannot disable sharing while host is woring on that.
         */
     });
 
-    socket.on("new_code", function( ){
+    socket.on("new_code", function(code){
+        client_can_emit = 0;
         setCodeInClientBox(code);
+        client_can_emit = 1;
     });
 
-    //Add sharing button
-    $('#share_code_btn').click(sharing_button_clicked());
     //Add logout button
     $('#logout_btn').click(logout);
 
@@ -111,7 +135,8 @@ function send_text(e) {
     call this method as soon as code in client box changes
 */
 function change_occured(text){
-    if(sharing_status_client == 1 && sharing_status_server == 1) {
+    if(client_can_emit == 1 && sharing_status_client == 1 && sharing_status_server == 1) {
+        console.log("Client_code emmitted");
         socket.emit("client_code", text);
     }
 }
@@ -137,8 +162,28 @@ function setCodeInClientBox(code) {
     /*
         It is called whenever any change to client's code is made by host
     */
+    console.log(code);
+    editor.setValue(code);
 }
 
+function local_sharing_toggle()
+{
+    if(sharing_status_client == 0)
+    {
+        console.log("Activating");
+        sharing_status_client = 1;
+        sharing_button_clicked(sharing_status_client);
+        $('.share_icon').html("cloud_upload");
+    }
+    else
+    {
+        $('.share_icon').html("cloud_off");
+        console.log("Disabled");
+        sharing_status_client = 0;
+        sharing_button_clicked(sharing_status_client);
+    }
+        
+}
 function logout() {
     $.post("/destroy_session", {name: client_name});
 }

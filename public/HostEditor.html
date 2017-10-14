@@ -28,18 +28,19 @@
                 <textarea class="codemirror-textarea"></textarea>
             </div>
             <div class="row" id="client_editor">
-                <h3>Client Name</h3>
+                <h3 id="client_name_box">Client Name</h3>
                 <textarea class="codemirror-textarea"></textarea>
             </div>
         </div>
         <div class="col l4 m4 s12" style="max-height: 50vh; overflow-y: scroll;">
             <div class="container center" id="connected_box">
                 <h4>Connected</h4>
-                <div class="card" id="host_card">
-                    <div class="card-content">
+                <div class="card" >
+                    <div class="card-content" onclick="back_to_host();">
                         <h5>Your code</h5>
                     </div>
                 </div>
+                
             </div>
         </div>
     </div>
