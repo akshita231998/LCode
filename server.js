@@ -13,7 +13,7 @@ var sess;
 var map_socketid_socket = {};
 var map_name_socket_id = {};
 var connection_names = [];
-var client_status_map = {};
+var client_status_map = new Map();
 var host_connected = 0;
 var host_id = null;
 var host_name = null;
@@ -72,20 +72,20 @@ io.on("connection", function(socket) {
     });
 
     //Send list of new active client connections to host
-    // socket.on("disconnect", function(){
-    //     if(this.id == host_id) {
-    //         host_connected = 0;
-    //         host_id = null;
-    //     }
-    //     else
-    //     {
-    //         map_socketid_socket.delete(socket.id);
-    //         map_name_socket_id = map_name_socket_id.filter(function(socket_id){
-    //             return socket_id!=socket.id;                                            
-    //         });
-    //         map_socketid_socket[host_id].emit("connection_list", client_status_map);
-    //     }
-    // });
+     socket.on("disconnect", function(){
+         if(this.id == host_id) {
+             host_connected = 0;
+             host_id = null;
+         }
+         else
+         {
+            console.log("Disconnection occured: ", socket.id);
+             var name;
+             
+                 console.dir(map_name_socket_id);;
+             
+         }
+     });
 
     //Send initial host code to client
     socket.emit("init_text", prev);
@@ -192,7 +192,8 @@ app.post("/set_host_session", function(req, res){
 });
 
 //Storing socket_id and name pairs for clients
-app.post("/pair_name_socket_id", function(req, res){
+app.post("/pair_name_socket_id", function(req, res) {
+    console.log(req.session.name);
      map_name_socket_id[req.session.name] = req.body.socket_id;
 });
 
