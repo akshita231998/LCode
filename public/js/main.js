@@ -1,7 +1,7 @@
-
 /*
     This script is used in server.html
-*/var host_editor_link = "/HostEditor.html";
+*/
+var host_editor_link = "/HostEditor.html";
 var client_home_pg_link = "/index.html";
 var host_connected_text = "Party hosted! Join it";
 var host_disconnected_text = "All Set Go!";
@@ -14,18 +14,13 @@ $(document).ready(function() {
             {
                 random-=1001;
             }
-            
+
             $("#login_card").fadeOut(function() {
                 $("#unique_id_card").fadeIn();
             });
-            
+
             $.post('/api/unique_code',{code : random}, function(res){
-                if(res == "1") {
-                    $("#unique_code").text(random);
-                }
-                else {
-                    $("#unique_code").text(res);
-                }
+                $("#unique_code").text(res);
             });
         } else {
             $("#host_name").addClass("invalid");
@@ -40,21 +35,18 @@ $(document).ready(function() {
     $.get("/api/host_status", function(res) {
         host_status = res;
         if(res == "disconnected") {
+            console.log("Hello");
             $("#host_editor_link").attr("href",host_editor_link);
             $("#host_editor_link").text(host_disconnected_text);
             $("#host_editor_link").click(function() {
-                /*
-               $.get("set_host_session", null, function() {
-               });*/
                 var host_name = $("#host_name").val();
                 console.log(host_name);
-                $.post("set_host_session", {name: host_name}, function(res)
-                {
-                    window.location = "/HostEditor.html";        
+                $.post("set_host_session", {name: host_name}, function(res) {
+                    window.location = "/HostEditor.html";
                 });
-                console.log("clicked");
             });
         } else {
+            console.log("Bye");
             $("#host_editor_link").attr("href",client_home_pg_link);
             $("#host_editor_link").text(host_connected_text);
         }

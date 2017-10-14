@@ -4,12 +4,12 @@
 var socket;
 var dmp = new diff_match_patch();
 var prev = "";
-var socket_id=null; 
+var socket_id=null;
 var sharing_status_server=0;
 var sharing_status_client = 0;
+
 $.get("/IpAddress",function(ip) {
-     if(ip!=undefined && ip!=null) {
-        
+     if(ip != undefined && ip != null) {
         /*
             Contains error proxy connection refused!
             Server disconnected error!
@@ -27,12 +27,12 @@ function start() {
         socket_id = this.id;
         $.post("pair_name_socket_id", {socket_id: this.id});
     });
-    
+
+    //Get socket_id from server
     socket.on("socket_id", function(var_socket_id){
         socket_id = var_socket_id;
-
     });
-    
+
      socket.on("init_text", function(init) {
       prev = init;
       host_editor.setValue(prev);
@@ -48,13 +48,13 @@ function start() {
       host_editor.setValue(res[0]);
       prev = res[0];
     });
-    
-    socket.on("chat_message_recieved", function(message)    
+
+    socket.on("chat_message_recieved", function(message)
     {
         receive_text(message);
     });
     socket.on("change_sharing_status", function(new_sharing_status){
-        sharing_status_server =new_sharing_status; 
+        sharing_status_server = new_sharing_status;
         /*
             Also disable the sharing click button by client, so that client cannot disable sharing while host is woring on that.
         */
@@ -67,11 +67,11 @@ function start() {
     	 var msg = document.createElement("div");
             msg.className = "receivedMsg";
             var msgText = document.createElement("p");
-            msgText.innerHTML = text;            
+            msgText.innerHTML = text;
             msg.appendChild(msgText);
-            document.getElementById("msg-box").appendChild(msg);   
+            document.getElementById("msg-box").appendChild(msg);
             document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
-    }             
+    }
 /*
     Chat box functionality
     call on every enter press inside chat box
@@ -90,7 +90,7 @@ function send_text(e) {
             msgText.innerHTML = text_msg;
             sendChatMessage(text_msg);
             msg.appendChild(msgText);
-            document.getElementById("msg-box").appendChild(msg);   
+            document.getElementById("msg-box").appendChild(msg);
             document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
             document.getElementById("msg_bar").value = "";
         }
@@ -112,17 +112,17 @@ function sharing_button_clicked(state) {
     */
     sharing_status_client = state;
     /*
-        This is for displaying label of sharing on host side in right side of client name 
+        This is for displaying label of sharing on host side in right side of client name
     */
     var client_status = {
         name: client_name,
         status: sharing_status_client
     };
-    socket.emit("sharing_status_client", client_status);    
-    
+    socket.emit("sharing_status_client", client_status);
+
 }
 function setCodeInClientBox(code){
     /*
-        It is called whenever any change to client's code is made by host 
+        It is called whenever any change to client's code is made by host
     */
 }

@@ -10,42 +10,43 @@ $.get("/IpAddress",function(ip) {
    start();
 });
 
-function start(){
+function start() {
     socket.on("connect",function() {
         console.log(socket.id);
         socket.emit("host_connected", socket.id);
         console.log("Socket connected");
     });
-    
+
     socket.on("init_text", function(init) {
       prev = init;
       editor.setValue(prev);
     });
-    
+
     socket.on("client_code", function(code){
-        console.log(code); 
+        console.log(code);
         /*
             Call a function to display selected client's shared code.
         */
     });
+    
     socket.on("disconnect", function() {
         console.log("Disconnected");
     });
-    
+
     socket.on("chat_message_recieved", function(message){
-        recieve_text(message); 
+        recieve_text(message);
     });
-    
+
     socket.on("connection_list", function(name_status_map){
         /*
             Call a function to display list
-        */ 
-        
+        */
+
 //        display_list(name_list);
     });
 }
 
-function change_occured(data){
+function change_occured(data) {
   cur = data;
   var diff = dmp.diff_main(prev,cur);
   if (diff.length > 2) {
@@ -57,14 +58,14 @@ function change_occured(data){
   socket.emit("host_patch",patch_list);
 }
 
-function client_code_changed(client_name,complete_code)
-{
+function client_code_changed(client_name,complete_code) {
     var change_object = {
         name: client_name,
         code: complete_code
     };
     socket.emit("client_new_code",change_object);
 }
+
 function sendChatMessage(message) {
     var new_message = client_name +": "+message;
     socket.emit("client_message",new_message);
@@ -91,10 +92,10 @@ function request_code(name, state)
         If request started => state : 1
         If request disabled => state: 0
     */
-    
+
     var status = {
         target_name: name,
-        enabled: state 
+        enabled: state
     };
     socket.emit("request_code", JSON.stringify(status));
 }
