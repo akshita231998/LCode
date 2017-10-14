@@ -63,11 +63,15 @@ h1 {
     max-width: 30vw;
     padding: 10px;
     padding-left: 20px;
+    padding-right: 20px;
     word-wrap: all;
     color: #fff;
-    display: block;
+    display: block !important;
+    float: left;
+    text-align: left;
     border-radius: 30px;
-    margin-left: 20%;
+    position: relative;
+    left: 20%;
 }
 .sentMsg {
     padding: 5px;
@@ -81,12 +85,14 @@ h1 {
     padding: 10px;
     text-align: left;
     padding-left: 20px;
+    padding-right: 20px;
     margin: 0px;
     word-wrap: all;
     color: #fff;
-    display: block;
+    display: block !important;
+    float: right;
     position: relative;
-    left: 60%;
+    left: -30%;
     border-radius: 30px;
 }
 #msg_bar {
