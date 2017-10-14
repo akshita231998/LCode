@@ -49,29 +49,41 @@ function start() {
       prev = res[0];
     });
 
-    socket.on("chat_message_recieved", function(message)
-    {
+    socket.on("chat_message_recieved", function(message) {
         receive_text(message);
     });
-    socket.on("change_sharing_status", function(new_sharing_status){
+
+    socket.on("change_sharing_status", function(new_sharing_status) {
         sharing_status_server = new_sharing_status;
         /*
+            Change button text accordingly
             Also disable the sharing click button by client, so that client cannot disable sharing while host is woring on that.
         */
     });
-    socket.on("new_code", function(code){
+
+    socket.on("new_code", function( ){
         setCodeInClientBox(code);
     });
+
+    //Add sharing button
+    $('#share_code_btn').click(sharing_button_clicked());
+    //Add logout button
+    $('#logout_btn').click(logout);
+
+    editor.on("changes", function(e) {
+      change_occured(editor.getValue());
+    });
 }
- function receive_text(text) {
-    	 var msg = document.createElement("div");
-            msg.className = "receivedMsg";
-            var msgText = document.createElement("p");
-            msgText.innerHTML = text;
-            msg.appendChild(msgText);
-            document.getElementById("msg-box").appendChild(msg);
-            document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
-    }
+
+function receive_text(text) {
+  	 var msg = document.createElement("div");
+          msg.className = "receivedMsg";
+          var msgText = document.createElement("p");
+          msgText.innerHTML = text;
+          msg.appendChild(msgText);
+          document.getElementById("msg-box").appendChild(msg);
+          document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
+}
 /*
     Chat box functionality
     call on every enter press inside chat box
@@ -98,9 +110,8 @@ function send_text(e) {
 /*
     call this method as soon as code in client box changes
 */
-function keyPressed(text){
-    if(sharing_status_client==1 && sharing_status_server == 1)
-    {
+function change_occured(text){
+    if(sharing_status_client == 1 && sharing_status_server == 1) {
         socket.emit("client_code", text);
     }
 }
@@ -112,7 +123,7 @@ function sharing_button_clicked(state) {
     */
     sharing_status_client = state;
     /*
-        This is for displaying label of sharing on host side in right side of client name
+        This is for displaying label of sharing on host side on right side of client name
     */
     var client_status = {
         name: client_name,
@@ -121,12 +132,13 @@ function sharing_button_clicked(state) {
     socket.emit("sharing_status_client", client_status);
 
 }
-function setCodeInClientBox(code){
+
+function setCodeInClientBox(code) {
     /*
         It is called whenever any change to client's code is made by host
     */
 }
 
 function logout() {
-    $.post("/destory_session", {name: client_name});
+    $.post("/destroy_session", {name: client_name});
 }

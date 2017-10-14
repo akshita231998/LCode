@@ -82,6 +82,7 @@ io.on("connection", function(socket) {
               if(!str.localeCompare(socket.id)) {
                 delete map_name_socket_id[name];
                 delete client_status_map[name];
+                connection_names.splice(connection_names.indexOf(name),1);
               }
             });
             if(host_connected) {
@@ -200,7 +201,7 @@ app.post("/pair_name_socket_id", function(req, res) {
      map_name_socket_id[req.session.client_name] = req.body.socket_id;
 });
 
-app.post("/destory_session", function(req, res){
+app.post("/destroy_session", function(req, res){
     if(req.session != null) {
         req.session.destroy();
     }

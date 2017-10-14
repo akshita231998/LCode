@@ -2,6 +2,9 @@
   Script for index.html
 */
 $(document).ready(function() {
+
+  var name_not_unique = "Oops! This name is taken :(";
+  var name_empty = "Please enter your name";
   //  $.get("/api/test", function(data){
   //      console.log(data);
   //  });
@@ -18,6 +21,7 @@ $(document).ready(function() {
                 $("#login_card").removeClass("disabled");
                 if(res.valid_login == 0) {
                   if(res.name_valid == 0) {
+                    $('#client_display_name_label').attr("data-error",name_not_unique);
                     $('#client_display_name').addClass("validate invalid") ;
                   }
                   if(res.unique_code_valid == 0) {
@@ -29,6 +33,7 @@ $(document).ready(function() {
           });
       } else {
             if($('#client_display_name').val() == "" ) {
+               $('#client_display_name_label').attr("data-error",name_empty);
                $('#client_display_name').addClass("validate invalid") ;
             }
            $("#progress_bar").addClass("hidden");
