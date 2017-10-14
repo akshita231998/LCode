@@ -72,20 +72,20 @@ io.on("connection", function(socket) {
     });
 
     //Send list of new active client connections to host
-    socket.on("disconnect", function(){
-        if(this.id == host_id) {
-            host_connected = 0;
-            host_id = null;
-        }
-        else
-        {
-            map_socketid_socket.delete(socket.id);
-            map_name_socket_id = map_name_socket_id.filter(functions(socket_id){
-                return socket_id!=socket.id;                                            
-            });
-            map_socketid_socket[host_id].emit("connection_list", client_status_map);
-        }
-    });
+    // socket.on("disconnect", function(){
+    //     if(this.id == host_id) {
+    //         host_connected = 0;
+    //         host_id = null;
+    //     }
+    //     else
+    //     {
+    //         map_socketid_socket.delete(socket.id);
+    //         map_name_socket_id = map_name_socket_id.filter(function(socket_id){
+    //             return socket_id!=socket.id;                                            
+    //         });
+    //         map_socketid_socket[host_id].emit("connection_list", client_status_map);
+    //     }
+    // });
 
     //Send initial host code to client
     socket.emit("init_text", prev);

@@ -56,7 +56,8 @@ h1 {
 .receivedMsg {
     text-align: left;
     padding: 5px;
-    display: block;
+    float: left;
+    width: 100%;
 }
 .receivedMsg > p {
     background: #00695c;
@@ -66,34 +67,28 @@ h1 {
     padding-right: 20px;
     word-wrap: all;
     color: #fff;
-    display: block !important;
-    float: left;
     text-align: left;
     border-radius: 30px;
-    position: relative;
-    left: 20%;
+    float: left;
+    display: block !important;
 }
 .sentMsg {
     padding: 5px;
-    display: block;
+    float: right;
     width: 100%;
 }
 .sentMsg > p {
     background: #4db6ac;
     max-width: 30vw;
-    width: auto;
     padding: 10px;
     text-align: left;
     padding-left: 20px;
     padding-right: 20px;
-    margin: 0px;
     word-wrap: all;
     color: #fff;
-    display: block !important;
     float: right;
-    position: relative;
-    left: -30%;
     border-radius: 30px;
+    display: block !important;
 }
 #msg_bar {
     width: 30%;
