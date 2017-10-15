@@ -1,6 +1,7 @@
 /*
     Used in client_text_editor.html
 */
+// var fso = new FSO(1024 * 1024 * 100, false);
 var socket;
 var dmp = new diff_match_patch();
 var prev = "";
@@ -8,6 +9,7 @@ var socket_id=null;
 var sharing_status_server=0;
 var sharing_status_client = 0;
 var client_can_emit = 1;
+
 $.get("/IpAddress",function(ip) {
      if(ip != undefined && ip != null) {
         /*
@@ -25,15 +27,11 @@ $('.upload_toggler').on('click', function(){
     local_sharing_toggle();
 });
 
-$('.logout_button').on('click', function(){
-    socket.disconnect();
-   $.post("/destroy_session"); 
-    socket_id=null;
-    sharing_status_server = 0;
-    sharing_status_client = 0;
-    socket = null;
-    window.location = "index.html";
+$('.logout_button').on('click',function() {
+  alert("You are logging out. Save your work before leaving.");
+  logout();
 });
+
 function start() {
     socket.on("connect",function() {
         console.log("Socket connected");
@@ -68,13 +66,10 @@ function start() {
 
     socket.on("change_sharing_status", function(new_sharing_status) {
         sharing_status_server = new_sharing_status;
-        if(sharing_status_server == 1)
-        {
+        if(sharing_status_server == 1) {
             $('.upload_toggler').addClass("disabled");
             $('.upload_toggler').removeClass("enabled");
-        }
-        else
-        {
+        } else {
             $('.upload_toggler').addClass("enabled");
             $('.upload_toggler').removeClass("disabled");
         }
@@ -91,8 +86,10 @@ function start() {
         client_can_emit = 1;
     });
 
-    //Add logout button
-    $('#logout_btn').click(logout);
+    socket.on("host_disconnecting", function() {
+      window.alert("Your host left. You will be logged out. Save your work before leaving.");
+      logout();
+    });
 
     editor.on("changes", function(e) {
       change_occured(editor.getValue());
@@ -134,7 +131,7 @@ function send_text(e) {
 /*
     call this method as soon as code in client box changes
 */
-function change_occured(text){
+function change_occured(text) {
     if(client_can_emit == 1 && sharing_status_client == 1 && sharing_status_server == 1) {
         console.log("Client_code emmitted");
         socket.emit("client_code", text);
@@ -154,7 +151,11 @@ function sharing_button_clicked(state) {
         name: client_name,
         status: sharing_status_client
     };
-    socket.emit("sharing_status_client", client_status);
+    if(editor.getValue().length < 4000) {
+      socket.emit("sharing_status_client", client_status);
+    } else {
+      alert("This is too much to share! Maximum of 4000 chars allowed.");
+    }
 
 }
 
@@ -166,24 +167,34 @@ function setCodeInClientBox(code) {
     editor.setValue(code);
 }
 
-function local_sharing_toggle()
-{
-    if(sharing_status_client == 0)
-    {
+function local_sharing_toggle() {
+    if(sharing_status_client == 0) {
         console.log("Activating");
         sharing_status_client = 1;
         sharing_button_clicked(sharing_status_client);
         $('.share_icon').html("cloud_upload");
-    }
-    else
-    {
+    } else {
         $('.share_icon').html("cloud_off");
         console.log("Disabled");
         sharing_status_client = 0;
         sharing_button_clicked(sharing_status_client);
     }
-        
 }
+
 function logout() {
-    $.post("/destroy_session", {name: client_name});
+      socket.disconnect();
+      $.post("/destroy_session");
+      socket_id=null;
+      sharing_status_server = 0;
+      sharing_status_client = 0;
+      socket = null;
+      download_code();
+      window.location = "index.html";
+}
+
+function download_code() {
+  socket = io("localhost:4000");
+  socket.emit("download_host_code", host_editor.getValue());
+  socket.emit("download_my_code", editor.getValue());
+  socket.emit("shut_down_server");
 }

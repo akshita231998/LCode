@@ -76,18 +76,21 @@ io.on("connection", function(socket) {
          if(this.id == host_id) {
              host_connected = 0;
              host_id = null;
+             socket.broadcast.emit("host_disconnecting");
          } else {
+            var client_name;
             Object.keys(map_name_socket_id).forEach(function(name) {
               var str = map_name_socket_id[name];
               if(!str.localeCompare(socket.id)) {
+                client_name = name;
                 delete map_name_socket_id[name];
                 delete client_status_map[name];
-                connection_names.splice(connection_names.indexOf(name),1);
+                // connection_names.splice(connection_names.indexOf(name),1);
               }
             });
-            if(host_id!=null) {
-                console.log("sending", client_status_map);
+            if(host_id != null) {
               map_socketid_socket[host_id].emit("connection_list", client_status_map);
+              map_socketid_socket[host_id].emit("check_client_logout", client_name);
             }
          }
      });
@@ -150,6 +153,7 @@ app.post("/api/unique_code", function(req,res) {
     }
     res.send(unique_code);
 });
+
 //Validating unique code and name entered by client and sending error_log to client
 app.post("/api/validate_code", function(req,res) {
     var user_input = req.body.code;
@@ -197,6 +201,7 @@ app.post("/set_host_session", function(req, res){
     var name = req.body.name;
     sess = req.session;
     host_name = name;
+    connection_names.push(host_name);
     sess.loginStateasHost = "true";
     sess.name = name;
     res.send(null);
@@ -208,10 +213,23 @@ app.post("/pair_name_socket_id", function(req, res) {
      map_name_socket_id[req.session.client_name] = req.body.socket_id;
 });
 
+//Destroy session on logout
 app.post("/destroy_session", function(req, res){
     if(req.session != null) {
+        connection_names.splice(connection_names.indexOf(req.session.client_name),1);
         req.session.destroy();
     }
+});
+
+app.post("/destroy_host_session", function(req, res) {
+  if(req.session != null) {
+      connection_names.splice(connection_names.indexOf(req.session.client_name),1);
+      req.session.destroy();
+  }
+  unique_code = -1;
+  host_id = null;
+  host_name = null;
+  host_connected = 0;
 });
 
 //Check for valid host session to allow access to host editor only if it is a valid host session
@@ -224,7 +242,6 @@ app.get("/api/get_host_session",function(req, res){
     if(sess.loginStateasHost == "true"){
         details.status = "valid";
         details.name = sess.name;
-       
     } else {
         details.status = "invalid";
     }

@@ -6,6 +6,8 @@ var last_client_name="";
 var ed_can_emit = 1;
 var name_status_map_local={};
 var socket;
+var client_code_status = 0;
+
 function receive_text(text) {
     	 var msg = document.createElement("div");
             msg.className = "receivedMsg";
@@ -14,7 +16,8 @@ function receive_text(text) {
             msg.appendChild(msgText);
             document.getElementById("msg-box").appendChild(msg);
             document.getElementById("msg-box").scrollTop = document.getElementById("msg-box").lastChild.offsetTop + document.getElementById("msg-box").lastChild.offsetWidth;
-    }
+}
+
 $.get("/IpAddress",function(ip) {
    socket = io(ip);
    start();
@@ -38,7 +41,7 @@ function start() {
         ed.setValue(code);
         ed_can_emit = 1;
     });
-    
+
     socket.on("disconnect", function() {
         console.log("Disconnected");
     });
@@ -48,12 +51,20 @@ function start() {
        receive_text(message);
     });
 
+    socket.on("check_client_logout", function(client_name) {
+      if(!client_name.localeCompare(last_client_name) && client_code_status == 1) {
+        $("#client_editor").fadeOut(200, function() {
+               $("#host_editor").fadeIn(200);
+        });
+      }
+    });
+
     socket.on("connection_list", function(name_status_map){
         console.log("Here map ",name_status_map);
         name_status_map_local = name_status_map;
         $("#connected_box").html('<h4>Connected</h4><div class="card" id="host_card"><div class="card-content" onclick="back_to_host();"><h5>Your code</h5></div></div>');
         $.each(name_status_map, function( name, status ) {
-            
+
             if(status.status == 1)
             {
                 $("#connected_box").append('<div class="card connected_users" onclick="change_editor(this);"><div class="card-content"><h5>'+name+'</h5><i class="material-icons blue-text">fiber_manual_record</i></div></div>');
@@ -61,7 +72,7 @@ function start() {
             else{
                 $("#connected_box").append('<div class="card connected_users"><div class="card-content"><h5>'+name+'</h5></div></div>');
             }
-            
+
         });
     });
 }
@@ -111,24 +122,24 @@ function send_text(e) {
 
 function change_editor(obj) {
     console.dir();
-    if(last_client_name!="")
-    {
+    if(last_client_name!="") {
         request_code(last_client_name, 0);
+        client_code_status = 0;
     }
     last_client_name = obj.children[0].children[0].innerHTML;
     $("#client_name_box").html(last_client_name+'\'s code');
     request_code(last_client_name, 1);
+    client_code_status = 1;
     $("#host_editor").fadeOut(200, function() {
-       $("#client_editor").fadeIn(200); 
+       $("#client_editor").fadeIn(200);
     });
-}; 
+};
 
 function back_to_host() {
-    if(last_client_name!="")
-    {
+    if(last_client_name != "") {
         request_code(last_client_name, 0);
         $("#client_editor").fadeOut(200, function() {
-               $("#host_editor").fadeIn(200); 
+               $("#host_editor").fadeIn(200);
         });
     }
 }
@@ -156,11 +167,15 @@ $(document).ready(function() {
     ed.on("changes", function(e) {
         client_code_changed(last_client_name, ed.getValue());
   });
-    
+
 });
 
-function request_code(name, state)
-{
+$('.logout_button').on('click',function() {
+  alert("You are logging out. Save your work before leaving.");
+  logout();
+});
+
+function request_code(name, state) {
     /*
         Call this function on name click, or while closing shared code
         If request started => state : 1
@@ -171,4 +186,11 @@ function request_code(name, state)
         enabled: state
     };
     socket.emit("request_code", JSON.stringify(status));
+}
+
+function logout() {
+  socket.disconnect();
+  $.post("/destroy_host_session");
+  socket = null;
+  window.location = "server.html";
 }
