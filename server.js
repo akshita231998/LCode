@@ -221,6 +221,7 @@ app.post("/destroy_session", function(req, res){
     }
 });
 
+//Destroy host session
 app.post("/destroy_host_session", function(req, res) {
   if(req.session != null) {
       connection_names.splice(connection_names.indexOf(req.session.client_name),1);
