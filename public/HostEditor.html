@@ -2,14 +2,71 @@
 <html>
 <head>
 	<title>Code mirror</title>
-	<link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
+	<link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="css/materialize.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/main.css"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script>
+        var req = new XMLHttpRequest();
+        req.open('GET',"/api/get_host_session",false);
+        req.send(null);
+        var response = JSON.parse(req.response);
+        var client_name = "";
+        if(response.status == "invalid") {
+            window.location = "/server.html";
+        } else {
+            client_name = response.name;
+        }
+    </script>
 </head>
 <body>
-	<textarea class="codemirror-textarea" onKeyDown="onKeyDown();"></textarea>
+	<div class="row">
+        <div class="col l8 m8 s12">
+            <div class="row" id="host_editor">
+                <h3>Host editor</h3>
+                <textarea class="codemirror-textarea"></textarea>
+            </div>
+            <div class="row" id="client_editor">
+                <h3 id="client_name_box">Client Name</h3>
+                <textarea class="codemirror-textarea"></textarea>
+            </div>
+        </div>
+        <div class="col l4 m4 s12" style="max-height: 50vh; overflow-y: scroll;">
+            <div class="container center" id="connected_box">
+                <h4>Connected</h4>
+                <div class="card" >
+                    <div class="card-content" onclick="back_to_host();">
+                        <h5>Your code</h5>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 center">
+            <div id="msg-box">
+                <div class="receivedMsg">
+                    <p>Hey try out this msg app!</p>
+                </div>
+                <div class="sentMsg right">
+                    <p>Hey!</p>
+                </div>
+            </div>
+            <input type="text" placeholder="Enter your message" onkeydown="send_text(event)" id="msg_bar" class="white">
+        </div>
+    </div>
+		<div class="row">
+				<div class="right-align">
+						<a class="btn logout_button" style="margin-right: 5px">Logout</a>
+				</div>
+		</div>
 </body>
 <script src="js/socket.io-client.min.js"></script>
 <script src="js/diff_match_patch.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/materialize.min.js"></script>
 <script src="codemirror/lib/codemirror.js"></script>
 <script src="js/HostDiff.js"></script>
 </html>
